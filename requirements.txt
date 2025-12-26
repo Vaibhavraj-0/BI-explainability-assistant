@@ -6,3 +6,4 @@ shap==0.46.0
 causalimpact==0.2.6
 openai==1.51.0
 python-dotenv==1.0.1
+gunicorn==23.0.0
