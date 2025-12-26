@@ -665,8 +665,7 @@ def chat():
     return redirect(url_for("home"))
 
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    host = os.environ.get('HOST', '0.0.0.0')
-    app.run(host=host, port=port, debug=False)
-
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 7860))
+    app.run(host="0.0.0.0", port=port, debug=False)
