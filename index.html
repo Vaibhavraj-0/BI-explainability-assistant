@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BI Explainability and Causal Assistant</title>
+    <style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+        margin: 0;
+        padding: 24px;
+        background: #f3f4f7;
+    }
+    .container {
+        max-width: 1150px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 24px;
+    }
+    @media (max-width: 768px) {
+        .container {
+            grid-template-columns: 1fr;
+        }
+    }
+    .panel {
+        background: #ffffff;
+        padding: 20px 22px;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+    }
+    .settings-title {
+        font-weight: 750;
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #1f2937;
+    }
+    label {
+        font-size: 13px;
+        font-weight: 650;
+        color: #374151;
+        display: block;
+    }
+    input, select {
+        width: 100%;
+        padding: 9px 11px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        margin-top: 4px;
+        margin-bottom: 10px;
+        font-size: 13px;
+        box-sizing: border-box;
+        background: #fff;
+        font-family: inherit;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+    }
+    .primary-btn {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg,#2563eb,#4f46e5);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.05s ease, box-shadow 0.12s ease;
+        font-size: 14px;
+    }
+    .primary-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(37,99,235,0.28);
+    }
+    .primary-btn:active {
+        transform: translateY(0);
+    }
+    .meta {
+        background: #eff6ff;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #0f172a;
+        margin-top: 12px;
+        border: 1px solid rgba(37,99,235,0.12);
+        line-height: 1.45;
+        word-break: break-word;
+    }
+    .meta div {
+        margin: 4px 0;
+    }
+    .warn {
+        background: #fff7ed;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #7c2d12;
+        margin-top: 10px;
+        border: 1px solid rgba(251,146,60,0.25);
+        line-height: 1.45;
+    }
+    .warn div {
+        margin: 4px 0;
+    }
+    .warn ul {
+        margin: 8px 0 0 16px;
+        padding: 0;
+    }
+    .warn li {
+        margin: 4px 0;
+    }
+
+    .section-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #6b7280;
+        margin-top: 14px;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+    .section-box {
+        background: #f9fafb;
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(15,23,42,0.06);
+    }
+    .row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .chat-window {
+        max-height: 600px;
+        overflow-y: auto;
+        margin-bottom: 12px;
+        padding-right: 4px;
+    }
+    .msg {
+        margin: 10px 0;
+        padding: 10px 14px;
+        border-radius: 14px;
+        max-width: 86%;
+        font-size: 14px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .user {
+        background: #e0f2fe;
+        margin-left: auto;
+        text-align: right;
+        border: 1px solid rgba(2,132,199,0.15);
+    }
+    .assistant {
+        background: #f3f4f6;
+        margin-right: auto;
+        border: 1px solid rgba(15,23,42,0.06);
+    }
+    .chat-input-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: flex-end;
+    }
+    .send-btn {
+        padding: 9px 18px;
+        border-radius: 999px;
+        border: none;
+        background: #2563eb;
+        color: white;
+        font-weight: 750;
+        cursor: pointer;
+        transition: transform 0.05s ease, box-shadow 0.12s ease;
+        font-size: 14px;
+    }
+    .send-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(37,99,235,0.22);
+    }
+    .send-btn:active {
+        transform: translateY(0);
+    }
+    .small-note {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+    h2 {
+        margin: 0 0 12px 0;
+        font-size: 18px;
+        color: #1f2937;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- LEFT PANEL: SETTINGS -->
+    <div class="panel">
+        <div class="settings-title">Dataset & Settings</div>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <label>Upload CSV (once per session)</label>
+            <input type="file" name="file" accept=".csv" required>
+            <button type="submit" class="primary-btn">Upload CSV</button>
+        </form>
+
+        {% if meta %}
+          {% if meta.error %}
+            <div class="warn">
+                <div><b>Upload error</b></div>
+                <div>{{ meta.error }}</div>
+            </div>
+          {% elif meta.columns %}
+            <div class="meta">
+              <div><b>Data loaded:</b> {{ meta.row_count or meta.rows or 0 }} rows, {{ meta.columns|length }} columns</div>
+              <div><b>All columns:</b></div>
+              <div style="font-size: 11px; color: #374151; margin-top: 4px;">{{ meta.columns|join(', ') }}</div>
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {% if ui and ui.warnings and ui.warnings|length > 0 %}
+        <div class="warn">
+            <div><b>Assumptions & Warnings</b></div>
+            <ul>
+                {% for w in ui.warnings %}
+                <li>{{ w }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form action="/set_config" method="POST" style="margin-top: 14px;">
+            <div class="section-box">
+                <div class="section-label">Analysis Type</div>
+
+                <label>KPI column (metric to explain)</label>
+                <select name="kpi_col" required>
+                    {% if meta and meta.columns %}
+                        {% for col in meta.columns %}
+                            <option value="{{ col }}" {% if config.kpi_col == col %}selected{% endif %}>
+                                {{ col }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        <option disabled selected>Upload a CSV first</option>
+                    {% endif %}
+                </select>
+
+                <label>Default analysis mode</label>
+                <select name="mode">
+                    <option value="drivers" {% if config.mode == 'drivers' %}selected{% endif %}>
+                        Driver Analysis (SHAP)
+                    </option>
+                    <option value="intervention" {% if config.mode == 'intervention' %}selected{% endif %}>
+                        Intervention Analysis (CausalImpact)
+                    </option>
+                </select>
+
+                <div class="small-note">
+                    Ask "What drove X?" for drivers. Ask "Did change at date Y lift Z?" for interventions. Ask "What if X is zero?" for counterfactuals.
+                </div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-label">CausalImpact Settings (if needed)</div>
+
+                <label>Date column</label>
+                <select name="date_col">
+                    {% if meta and meta.columns %}
+                        {% for col in meta.columns %}
+                            <option value="{{ col }}" {% if config.date_col == col %}selected{% endif %}>
+                                {{ col }}
+                            </option>
+                        {% endfor %}
+                    {% else %}
+                        <option disabled selected>Upload a CSV first</option>
+                    {% endif %}
+                </select>
+
+                <label>Pre-intervention period (baseline)</label>
+                <div class="row2">
+                    <input name="pre_start" type="date" placeholder="Start" value="{{ config.pre_start or '' }}">
+                    <input name="pre_end" type="date" placeholder="End" value="{{ config.pre_end or '' }}">
+                </div>
+
+                <label>Post-intervention period (after change)</label>
+                <div class="row2">
+                    <input name="post_start" type="date" placeholder="Start" value="{{ config.post_start or '' }}">
+                    <input name="post_end" type="date" placeholder="End" value="{{ config.post_end or '' }}">
+                </div>
+
+                <div class="small-note">
+                    CausalImpact analyzes real interventions at a point in time. Provide dates when something actually changed (campaign launch, bid change, etc.).
+                </div>
+            </div>
+
+            <button type="submit" class="primary-btn">Save Settings</button>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL: CHAT -->
+    <div class="panel">
+        <h2>BI Explainability & Causal Analysis</h2>
+
+        <div class="chat-window">
+            {% for msg in messages %}
+            <div class="msg {{ msg.role }}">
+                {{ msg.content }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <form action="/chat" method="POST">
+            <div class="chat-input-row">
+                <input 
+                    name="message" 
+                    type="text"
+                    placeholder="Ask questions: 'What drove revenue?', 'Did the July campaign lift sales?', 'What if email_spend is zero?'" 
+                    required
+                    autocomplete="off"
+                >
+                <button type="submit" class="send-btn">Ask</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>
